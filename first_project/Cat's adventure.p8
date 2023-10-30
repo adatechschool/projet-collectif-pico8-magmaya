@@ -7,7 +7,7 @@ function _init()
 	create_player()
 	dogs={}
 	init_msg()
-	spawn_dogs_left_right()
+	spawn_dogs()
 	music(0)
 end
 
@@ -18,22 +18,27 @@ function _update()
  end
  update_camera()
  update_msg()
- update_dogs()
+ update_dogs_left_right()
+ update_dogs_up_down()
  if dogs==0 then
- 	spawn_dogs_left_right()
+		spawn_dogs()
+ end
+ collision_dogs()
+ if p.cooldown>0 then
+ 	p.cooldown-=1
  end
 end
 
 function _draw()
 	cls()
 	draw_map()
+	-- boucles chiens gauche/droite	
+	for d in all(dogs) do
+		spr(d.sprite,d.x*8,d.y*8)
+	end
 	draw_player()
 	draw_ui()
 	draw_msg()
--- boucles chiens gauche/droite	
-	for e in all(dogs) do
-		spr(3,e.x*8,e.y*8)
-	end	
 end
 
 -->8
@@ -47,6 +52,7 @@ function check_flag(flag,x,y)
 	local sprite = mget(x,y)
 	return fget(sprite,flag)
 end
+
 
 function update_camera()
  camx=mid(0,p.x-7.5,127-15)
@@ -71,6 +77,7 @@ function pick_up(x,y)
  object_taken(x,y)
 end
 
+	
 
 
 
@@ -85,7 +92,9 @@ function create_player()
 		x=2,
 		y=2,
 		sprite=1,
-		hearts=0}
+		hearts=0,
+		cooldown=0
+		}
 end
 
 
@@ -144,15 +153,16 @@ function interact(x,y)
 	visited_pnj4=true
 	return visited_pnj4
 	end
-	
-	if check_flag(3,newx,newy) then
-	dog_movement()
-	end
 end  
 
 
 function draw_player()
-	spr(p.sprite,p.x*8,p.y*8)
+palt(0,false)
+palt(3,true)
+
+	if flr(p.cooldown/5)%2 == 0 then
+		spr(p.sprite,p.x*8,p.y*8)
+	end
 end
 
 
@@ -188,7 +198,7 @@ function init_msg()
 	messages={}
 end
 	
---create_msg("hello!","il faut trouver la croquette d'or pour te soigner")
+
 	
 function create_msg(...)
 	messages={...}
@@ -202,7 +212,6 @@ end
 
 function draw_msg()
 	if messages[1] then
---	local y=100
 	rectfill(2,9,120,30,4)
 	rect(2,9,120,30,2)
 	print(messages[1],4,11,7)
@@ -211,30 +220,174 @@ end
 -->8
 -- enemies
 
-function spawn_dogs_left_right()
-		new_dog={
+function spawn_dogs()
+
+		dog_1={
 		x=2,
-		y=9
+		y=9,
+		min_x=2,
+		max_x=5,
+		speed=0.2,
+		state="right",
+		sprite=3
 		}
-		add(dogs,new_dog)
+		dog_2={
+		x=17,
+		y=6,
+		min_x=17,
+		max_x=19,
+		speed=0.1,
+		state="right",
+		sprite=3
+		}
+		dog_3={
+		x=35,
+		y=6,
+		min_y=6,
+		max_y=9,
+		speed=0.1,
+		state="down",
+		sprite=3
+		}
+		dog_4={
+		x=50,
+		y=8,
+		min_x=50,
+		max_x=54,
+		speed=0.1,
+		state="right",
+		sprite=3
+		}
+		dog_5={
+		x=41,
+		y=26,
+		min_y=26,
+		max_y=31,
+		speed=0.1,
+		state="down",
+		sprite=3
+		}
+		dog_6={
+		x=47,
+		y=28,
+		min_y=28,
+		max_y=31,
+		speed=0.1,
+		state="down",
+		sprite=3
+		}
+		dog_7={
+		x=59,
+		y=24,
+		min_y=24,
+		max_y=31,
+		speed=0.1,
+		state="down",
+		sprite=3
+		}
+		dog_8={
+		x=78,
+		y=27,
+		min_y=27,
+		max_y=31,
+		speed=0.1,
+		state="down",
+		sprite=3
+		}
+		add(dogs,dog_1)
+		add(dogs,dog_2)
+		add(dogs,dog_3)
+		add(dogs,dog_4)
+		add(dogs,dog_5)
+		add(dogs,dog_6)
+		add(dogs,dog_7)
+		add(dogs,dog_8) 
 end
 
-function update_dogs()
-	for e in all(dogs) do
-		if e.x<5  then 
-		e.x+=0.3
+
+function collision_dogs()
+	for d in all(dogs) do
+		if flr(d.x+1)==flr(p.x) and
+	 flr(d.y+1)==flr(p.y) and
+	  p.cooldown==0 then
+			dog_injury()
+		end
+	end
+end
+
+
+function update_dogs_left_right()
+
+
+	for d in all(dogs) do
+		if d.state=="right" and 
+		flr(d.x) < d.max_x then
+			d.x+=d.speed
+		end
+		
+		if d.state=="right" and
+	 flr(d.x)==d.max_x then
+			d.sprite=4
+			d.state="left"
+		end
+		
+		if d.state=="left" and
+	 flr(d.x) >= d.min_x then
+			d.x-=d.speed
+		end
+		
+		if d.state=="left" and 
+		flr(d.x+1)==d.min_x then
+			d.sprite=3
+			d.state="right"
+		end
+	end
+end
+
+function update_dogs_up_down()
+		
+	for d in all(dogs) do
+		if d.state=="down" and 
+		flr(d.y) < d.max_y then
+			d.y+=d.speed
+		end
+		
+		if d.state=="down" and
+	 flr(d.y)==d.max_y then
+			d.state="up"
+		end
+		
+		if d.state=="up" and
+	 flr(d.y) >= d.min_y then
+			d.y-=d.speed
+		end
+		
+		if d.state=="up" and 
+		flr(d.y+1)==d.min_y then
+			d.state="down"
 		end
 	end
 end
 	
-function dog_movement(x,y)
-	sprite=mget(x,y)
-	if not dog_visited then
+function dog_injury()
 	p.hearts-=1
-	dog_visited=true
-	return dog_visited
+	p.cooldown=50
+	if p.hearts<0 then
+		p.x=2
+		p.y=2
+		p.hearts=0
 	end
 end
+
+
+
+
+
+
+
+
+
+
 __gfx__
 3337333333337333373333333333343333433333333b8b3333333333333333333333333333333a33333883333fffff3311111111444444444444444433333333
 37773377773377737a73333333333484484333333b8bbb333300033333333333333333333333aaa3338888333f6f6f331cc11111444444444ff44ff433333333
@@ -244,14 +397,14 @@ __gfx__
 333777733777733337333373334444333344443333bb8b3333000333333333333999993339999933377cc773f32223f311ccc11111c111114444444433333333
 33373373373373337873333333433433334334333334433333333333333333333333333333333333377ac773331313331c1111111c1ccc114fff44f433333333
 33373373373373333733333333433433334334333354453333333333333333333333333333333333577cc77533131333111111111111111144444ff433333333
-3333333355555555dddddddd33366333ff444444333223333fffff333fffff333333333333333333ffffffffff0ff0ff00000000000000000000000000000000
-333ba33356666565dddddddd33666633444444ff332222333fcfcf333fbfbf333333333333333333ff0ff0fff080080f00000000000000000000000000000000
-33abbb3356656665dddddddd336566634ffff444322222233fffff333fffff333333333333333333f080080f0888888000000000000000000000000000000000
-3bbbabb356666665dddddddd366666664444444437177173333f3333333f333333333b33339333930888888008888e8000000000000000000000000000000000
-33abbb3355666665dddddddd36665666fff44444377777733feeef333f888f333bb3b3333399999308888e80f088e80f00000000000000000000000000000000
-3bbbabb356665665dddddddd6666665644444ff4377cc773f3eee3f3f38883f333b3b33333333333f088e80fff0880ff00000000000000000000000000000000
-3334433356666665dddddddd66566666ff444444377ac7733353533333434333333b333333333333ff0880fffff00fff00000000000000000000000000000000
-3354453355555555dddddddd55555555444444ff577cc77533535333334343333333333333333333fff00fffffffffff00000000000000000000000000000000
+3333333355555555dddddddd33366333ff444444333223333fffff333fffff33333333333333333300000000ff0ff0ff33337333333733330000000000000000
+333ba33356666565dddddddd33666633444444ff332222333fcfcf333fbfbf33333333333333333300000000f080080f77337773377733770000000000000000
+33abbb3356656665dddddddd336566634ffff444322222233fffff333fffff333333333333333333000000000888888073337673376733370000000000000000
+3bbbabb356666665dddddddd366666664444444437177173333f3333333f333333333b33339333930000000008888e8073337773377733370000000000000000
+33abbb3355666665dddddddd36665666fff44444377777733feeef333f888f333bb3b3333399999300000000f088e80f77777333333777770000000000000000
+3bbbabb356665665dddddddd6666665644444ff4377cc773f3eee3f3f38883f333b3b3333333333300000000ff0880ff37777333333777730000000000000000
+3334433356666665dddddddd66566666ff444444377ac7733353533333434333333b33333333333300000000fff00fff33737733337737330000000000000000
+3354453355555555dddddddd55555555444444ff577cc7753353533333434333333333333333333300000000ffffffff33733733337337330000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
