@@ -32,7 +32,7 @@ end
 function _draw()
 	cls()
 	draw_map()
-	-- boucles chiens gauche/droite	
+	-- boucles chiens
 	for d in all(dogs) do
 		spr(d.sprite,d.x*8,d.y*8)
 	end
@@ -63,12 +63,11 @@ end
 function object_taken(x,y)
 	sprite=mget(x,y)
 	if x==53 and y==5 then
-		sprite=mget(x,y)
 		mset(x,y,25)
 		p.hearts+=3
 	else
-	mset(x,y,25)
-	p.hearts+=1
+		mset(x,y,25)
+		p.hearts+=1
 	end
 end
 
@@ -106,34 +105,36 @@ end
 function player_movement()
 	newx=p.x
 	newy=p.y
+	
 	if p.anim_t==0 then
-	if btn(➡️) then
-	 newx+=1
-	 newox=-8
-	 newoy=0
-	 p.flip=false
-		
-	elseif btn(⬅️)then
-	 newx-=1
-	 newox=8
-	 newoy=0
-	 p.flip=true
-		 
-	elseif btn(⬇️)then
-	 newy+=1
-	 newox=0
-		newoy=-8
+		if btn(➡️) then
+		 newx+=1
+		 newox=-8
+		 newoy=0
+		 p.flip=false
 			
-	elseif btn(⬆️)then
-	 newy-=1
-		newox=0
-		newoy=8	
-	end
+		elseif btn(⬅️)then
+		 newx-=1
+		 newox=8
+		 newoy=0
+		 p.flip=true
+			 
+		elseif btn(⬇️)then
+		 newy+=1
+		 newox=0
+			newoy=-8
+				
+		elseif btn(⬆️)then
+		 newy-=1
+			newox=0
+			newoy=8	
+		end
 	end
 	
 	
 	interact(newx,newy)
 	
+	-- verif flag et animation
 	if not check_flag(0,newx,newy)
  and (p.x!=newx or p.y!=newy) then
 		p.x=mid(0,newx,127)
@@ -143,7 +144,7 @@ function player_movement()
 		p.anim_t=1
 	end
 	
---animations
+	--animation : bouger offset
 	p.anim_t=max(p.anim_t-0.125,0)
 	p.ox=p.start_ox*p.anim_t
 	p.oy=p.start_oy*p.anim_t
@@ -154,12 +155,11 @@ function player_movement()
 		p.sprite=1
 	end
 	
---trous	
+	--trous	
 	if check_flag(2,newx,newy) then
 	p.x=2
 	p.y=2
-	end
-	
+	end	
 end
 
 
@@ -168,6 +168,7 @@ function interact(x,y)
  pick_up(x,y) 
 	end
 	
+	-- dialogues
 	if x==6 and y==16  
 	and not visited_pnj1 then 
 	create_msg("hello!\nil faut trouver la croquette\nd'or pour te soigner")
@@ -199,25 +200,24 @@ end
 
 
 function draw_player()
+	--transparence
 	palt(0,false)
 	palt(3,true)
 	
---clignotements
+	--clignotement degats / animation offset
 	if flr(p.cooldown/5)%2 == 0 then
 		spr(p.sprite,p.x*8+p.ox,p.y*8+p.oy,
 		1,1,p.flip)
-	end
-	
-
+	end	
 end
 
---spr(p.sprite,p.x*8,p.y*8)
 -->8
 --user interface
 
 function draw_ui()
 	camera()
-	
+
+-- transparence coeur	
 	palt(0,false)
 	palt(15,true)
 	
@@ -228,6 +228,7 @@ function draw_ui()
 	print_outline(" X"..p.hearts,10,2) 
 end
 
+-- affichage rectangle exterieur dialogue
 function print_outline(text,x,y)
 	print(text,x-1,y,0)	
 	print(text,x+1,y,0)
@@ -245,7 +246,6 @@ function init_msg()
 end
 	
 
-	
 function create_msg(...)
 	messages={...}
 end
@@ -256,6 +256,7 @@ function update_msg()
 	end
 end
 
+-- dimensions rectangle dialogue
 function draw_msg()
 	if messages[1] then
 	rectfill(2,9,120,30,4)
@@ -388,6 +389,7 @@ function update_dogs_left_right()
 		end
 	end
 end
+
 
 function update_dogs_up_down()
 		
